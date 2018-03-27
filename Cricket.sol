@@ -1,5 +1,5 @@
 pragma solidity ^0.4.21;
-pragma experimental ABIEncoderV2;
+//pragma experimental ABIEncoderV2;
 
 contract Cricket{
     
@@ -14,7 +14,7 @@ contract Cricket{
     //uint8 i = 0;
       uint8 i;
     struct teamDetails{
-        string playerName;
+        bytes32 playerName;
         Role playerRole;
     }
         
@@ -110,7 +110,7 @@ contract Cricket{
         return(declaredResult[winningTeam],declaredResult[loosingTeam],declaredResult[manOfTheMatch]);
     }
     
-    function enterTeamDetails(address _teamAddress, string _playerName, Role _playerRole) public onlySponsor returns(string,uint8){
+    function enterTeamDetails(address _teamAddress, bytes32 _playerName, Role _playerRole) public onlySponsor returns(string,uint8){
        //uint8 i;
         if (i < 2){
         //teamA[_teamAddress][i].playerName = _playerName;
@@ -127,13 +127,22 @@ contract Cricket{
         }
     }
     
-    function getTeamDetails(address _teamAddress) public view returns(teamDetails[]){
+    function getTeamDetails(address _teamAddress) public view returns(bytes32[3],Role[3]){
+        uint8 c=0;
+        bytes32[3] memory s;
+        Role[3] memory r; 
+        
         teamDetails[] storage team = teamA[_teamAddress];
-        return(team);
+        
+        for(c=0;c<2;c++){
+            s[c] = team[c].playerName;
+            r[c] = team[c].playerRole;
+        }
+        return(s,r);
     }
-    
 }
 
+/*
 contract Payment{
     
     address sponsor;
@@ -155,4 +164,4 @@ contract Payment{
         MoM.transfer;
         return("manOfTheMatch payment completed");
     }
-}
+}*/
