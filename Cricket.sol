@@ -7,7 +7,7 @@ contract Cricket{
     enum Role {bat, ball, all, wk}
     
     address sponsor;
-    address public admin;
+    address admin;
     address winningTeam;
     address loosingTeam;
     address public manOfTheMatch;
@@ -63,10 +63,6 @@ contract Cricket{
         
     function assignAdmin(address _admin) public onlySponsor{
         admin = _admin;
-    }
-    
-    function addFunds() public payable {
-        require(msg.value >= 10 ether);
     }
     
     function addBowlerStats(address _bowlerAddress, string _bowlerName, uint _overs, uint _runsGiven, uint _economy) public onlySponsorOrAdmin {
@@ -142,26 +138,37 @@ contract Cricket{
     }
 }
 
-/*
-contract Payment{
+
+contract Payment is Cricket{
     
-    address sponsor;
-    address MoM;
-    
-    Cricket m;
-    
-    modifier onlySponsorOrAdmin1(){
-        require(msg.sender == sponsor||msg.sender == m.admin());
-        _;
+    function addFunds() public payable {
+        require(msg.value >= 10 ether);
     }
     
-    function Payment(){
-        sponsor = msg.sender;
+    function payMoM(uint256 _value)public onlySponsorOrAdmin returns(string,uint256){
+        manOfTheMatch.transfer(_value);
+        return("manOfTheMatch payment completed",manOfTheMatch.balance);
+    }
+}
+
+contract Payment2{
+    
+    Cricket match1;
+    
+    function addFunds() public payable returns(uint256){
+        require(msg.value >= 10 ether);
+        return(this.balance);
     }
     
-    function payMoM()public payable onlySponsorOrAdmin1 returns(string){
-        MoM = m.manOfTheMatch();
-        MoM.transfer;
-        return("manOfTheMatch payment completed");
+    function setMatch(address _Cricket) public returns(string){
+        match1 = Cricket(_Cricket);
+        return("Match address set");
+        }
+    
+    function payMoM(uint256 _value)public returns(string,uint256){
+        address MoM = match1.manOfTheMatch();
+       // MoM.transfer(_value);
+        return("manOfTheMatch payment completed",MoM.balance);
     }
-}*/
+        
+}
