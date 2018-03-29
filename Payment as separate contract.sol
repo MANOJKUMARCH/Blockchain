@@ -138,3 +138,28 @@ contract Cricket{
         return(s,r);
     }
 }
+
+
+
+
+contract Payment2{
+    
+    Cricket match1;
+    
+    function addFunds() public payable returns(uint256){
+        require(msg.value >= 10 ether);
+        return(this.balance);
+    }
+    
+    function setMatch(address _Cricket) public returns(string){
+        match1 = Cricket(_Cricket);
+        return("Match address set");
+        }
+    
+    function payMoM(uint256 _value)public returns(string,uint256){
+        address MoM = match1.manOfTheMatch();
+       // MoM.transfer(_value);
+        return("manOfTheMatch payment completed",MoM.balance);
+    }
+        
+}

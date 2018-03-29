@@ -138,3 +138,34 @@ contract Cricket{
         return(s,r);
     }
 }
+
+
+contract Payment is Cricket{
+    
+    uint8 pc;
+    
+    function addFunds() public payable {
+        require(msg.value >= 10 ether);
+    }
+    
+    function payMoM(uint256 _value)public onlySponsorOrAdmin returns(string,uint256){
+        manOfTheMatch.transfer(_value);
+        return("manOfTheMatch payment completed",manOfTheMatch.balance);
+    }
+    
+    function payWinningTeam(uint256[] _valueWin)public onlySponsorOrAdmin returns(string){
+        teamDetails[] storage teamWin = team[winningTeam]; 
+        for(pc=0;pc<2;pc++){
+            teamWin[pc].playerAddress.transfer(_valueWin[pc]);
+        }
+        pc = 0;
+    }
+    
+    function payLoosingTeam(uint256[] _valueWin)public onlySponsorOrAdmin returns(string){
+        teamDetails[] storage teamLoose = team[loosingTeam]; 
+        for(pc=0;pc<2;pc++){
+            teamLoose[pc].playerAddress.transfer(_valueWin[pc]);
+        }
+        pc = 0;
+    }
+}
