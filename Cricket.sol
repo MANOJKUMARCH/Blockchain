@@ -12,7 +12,7 @@ contract Cricket{
     address loosingTeam;
     address public manOfTheMatch;
     //uint8 i = 0;
-      uint8 i;
+      uint8 count;
     struct teamDetails{
         bytes32 playerName;
         Role playerRole;
@@ -108,18 +108,18 @@ contract Cricket{
     
     function enterTeamDetails(address _teamAddress, bytes32 _playerName, Role _playerRole) public onlySponsor returns(string,uint8){
        //uint8 i;
-        if (i < 2){
+        if (count < 2){
         //teamA[_teamAddress][i].playerName = _playerName;
         //teamA[_teamAddress][i].playerRole = _playerRole;
              
         teamDetails memory temp = teamDetails(_playerName,_playerRole);    
         teamA[_teamAddress].push(temp);
-        i = i++;
-        return("Player details updated",i);
+        count = count++;
+        return("Player details updated",count);
         }
         else{
-        i = 0;
-        return("All details successfully added",i);   
+        count = 0;
+        return("All details successfully added",count);   
         }
     }
     
