@@ -10,7 +10,8 @@ contract Cricket{
     address admin;
     address winningTeam;
     address loosingTeam;
-    address public manOfTheMatch;
+    address manOfTheMatch;
+    address teamFull;
     //uint8 i = 0;
       uint8 count;
     struct teamDetails{
@@ -107,20 +108,25 @@ contract Cricket{
         return(declaredResult[winningTeam],declaredResult[loosingTeam],declaredResult[manOfTheMatch]);
     }
     
-    function enterTeamDetails(address _teamAddress,address _playerAddress, bytes32 _playerName, Role _playerRole) public onlySponsor returns(string,uint8){
+    function enterTeamDetails(address _teamAddress,address _playerAddress, bytes32 _playerName, Role _playerRole) public onlySponsorOrAdmin returns(string,uint8){
        //uint8 i;
         if (count < 2){
+            if (teamFull != _teamAddress){
         //teamA[_teamAddress][i].playerName = _playerName;
         //teamA[_teamAddress][i].playerRole = _playerRole;
-             
         teamDetails memory temp = teamDetails(_playerAddress,_playerName,_playerRole);    
         team[_teamAddress].push(temp);
-        count = count++;
+        count++;
         return("Player details updated",count);
+            }
+            else{
+            return("All details successfully added",count);   
+            }
         }
         else{
         count = 0;
-        return("All details successfully added",count);   
+        teamFull = _teamAddress;
+        return("All details successfully added",count);
         }
     }
     
@@ -144,7 +150,7 @@ contract Payment is Cricket{
     
     uint8 pc;
     
-    function addFunds() public payable {
+    function Payment() public payable {
         require(msg.value >= 10 ether);
     }
     
