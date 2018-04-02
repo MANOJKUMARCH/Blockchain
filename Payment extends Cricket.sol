@@ -37,6 +37,7 @@ contract Cricket{
     }
     
     mapping(address => string) declaredResult;
+    mapping(address => string) teamName;
     mapping(address => bowlingStats) bowlerDetails;
     mapping(address => battingStats) batsmenDetails;
     mapping(address => teamDetails[])team;
@@ -66,6 +67,12 @@ contract Cricket{
     function assignAdmin(address _admin) public onlySponsor{
         admin = _admin;
     }
+    
+    function enterTeamName(address tAd,string tName) public onlySponsorOrAdmin{
+        teamName[tAd] =  tName;
+    }
+    
+    
     
     function addBowlerStats(address _bowlerAddress, string _bowlerName, uint _overs, uint _runsGiven, uint _economy) public onlySponsorOrAdmin {
         bowlerDetails[_bowlerAddress].bowlerName = _bowlerName;
@@ -97,9 +104,9 @@ contract Cricket{
     
     function declareResults(address _winningTeam, address _loosingTeam, address _manOfTheMatch) public onlySponsorOrAdmin{
         winningTeam = _winningTeam;
-        declaredResult[_winningTeam] = "Team B";
+        declaredResult[_winningTeam] = teamName[_winningTeam];
         loosingTeam = _loosingTeam;
-        declaredResult[_loosingTeam] = "Team A";
+        declaredResult[_loosingTeam] = teamName[_loosingTeam];
         manOfTheMatch = _manOfTheMatch;
         declaredResult[_manOfTheMatch] = batsmenDetails[_manOfTheMatch].batsmenName;
     }
@@ -130,10 +137,10 @@ contract Cricket{
         }
     }
     
-    function getTeamDetails(address _teamAddress) public view returns(bytes32[3],Role[3]){
+    function getTeamDetails(address _teamAddress) public view returns(bytes32[2],Role[2]){
         uint8 c=0;
-        bytes32[3] memory s;
-        Role[3] memory r; 
+        bytes32[2] memory s;
+        Role[2] memory r; 
         
         teamDetails[] storage teams = team[_teamAddress];
         
@@ -149,6 +156,8 @@ contract Cricket{
 contract Payment is Cricket{
     
     uint8 pc;
+    //uint256[] valueWin;
+    //uint256[] valueLoose;
     
     function Payment() public payable {
         require(msg.value >= 10 ether);
@@ -161,16 +170,20 @@ contract Payment is Cricket{
     
     function payWinningTeam(uint256[] _valueWin)public onlySponsorOrAdmin returns(string){
         teamDetails[] storage teamWin = team[winningTeam]; 
+        //valueWin[] = _valueWin[];
         for(pc=0;pc<2;pc++){
-            teamWin[pc].playerAddress.transfer(_valueWin[pc]);
+            uint256 vW = _valueWin[pc];
+            teamWin[pc].playerAddress.transfer(vW);
         }
         pc = 0;
     }
     
-    function payLoosingTeam(uint256[] _valueWin)public onlySponsorOrAdmin returns(string){
+    function payLoosingTeam(uint256[] _valueLoose)public onlySponsorOrAdmin returns(string){
         teamDetails[] storage teamLoose = team[loosingTeam]; 
+        //valueLoose[] = _valueLoose[];
         for(pc=0;pc<2;pc++){
-            teamLoose[pc].playerAddress.transfer(_valueWin[pc]);
+            uint256 vL = _valueLoose[pc];
+            teamLoose[pc].playerAddress.transfer(vL);
         }
         pc = 0;
     }
