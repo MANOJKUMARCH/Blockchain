@@ -117,23 +117,18 @@ contract Cricket{
     
     function enterTeamDetails(address _teamAddress,address _playerAddress, bytes32 _playerName, Role _playerRole) public onlySponsorOrAdmin returns(string,uint8){
        //uint8 i;
-        if (count < 2){
-            if (teamFull != _teamAddress){
-        //teamA[_teamAddress][i].playerName = _playerName;
-        //teamA[_teamAddress][i].playerRole = _playerRole;
+        if (count < 2 && teamFull != _teamAddress){
         teamDetails memory temp = teamDetails(_playerAddress,_playerName,_playerRole);    
         team[_teamAddress].push(temp);
         count++;
+            if (count >=2){
+            teamFull = _teamAddress;
+            count = 0;
+            return("All details successfully added",count);
+            }
         return("Player details updated",count);
-            }
-            else{
-            return("All details successfully added",count);   
-            }
-        }
-        else{
-        count = 0;
-        teamFull = _teamAddress;
-        return("All details successfully added",count);
+        }else{
+            return("All players successfully entered for this team. Please change team address and enter new team",count);
         }
     }
     
@@ -160,7 +155,7 @@ contract Payment is Cricket{
     //uint256[] valueLoose;
     
     function Payment() public payable {
-        require(msg.value >= 10 ether);
+        require(msg.value >= 100);
     }
     
     function payMoM(uint256 _value)public onlySponsorOrAdmin returns(string,uint256){
@@ -168,14 +163,15 @@ contract Payment is Cricket{
         return("manOfTheMatch payment completed",manOfTheMatch.balance);
     }
     
-    function payWinningTeam(uint256[] _valueWin)public onlySponsorOrAdmin returns(string){
+    function payWinningTeam(uint256 _valueWin)public onlySponsorOrAdmin returns(uint256){
         teamDetails[] storage teamWin = team[winningTeam]; 
         //valueWin[] = _valueWin[];
         for(pc=0;pc<2;pc++){
-            uint256 vW = _valueWin[pc];
+            uint256 vW = _valueWin;
             teamWin[pc].playerAddress.transfer(vW);
         }
         pc = 0;
+        return(this.balance);
     }
     
     function payLoosingTeam(uint256[] _valueLoose)public onlySponsorOrAdmin returns(string){
