@@ -20,6 +20,7 @@ contract IPLPredictions{
     
     event matchDetailsUpdated(uint8 _matchId, string _teamA, string _teamB, uint _timeStamp);
     event matchResultUpdated(uint8 _matchId, string _winningTeam);
+    event finalPredictionCounts(address _predictor,uint8 _totalCorrectPredictions);
     
     modifier onlyAdmin(){
         if(msg.sender != admin){
@@ -117,7 +118,8 @@ contract IPLPredictions{
                     correctPredict++;
                 }
             }
-        successCount[predictor[pc]] = correctPredict;    
+        successCount[predictor[pc]] = correctPredict;  
+        emit finalPredictionCounts(predictor[pc],correctPredict);
         }
     }
 }
