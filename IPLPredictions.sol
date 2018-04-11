@@ -7,6 +7,7 @@ contract IPLPredictions{
     uint predictorsCount;
     //string[] matchResult;
     uint maxMatchId;
+    uint tpc;
     
     struct fixture{
         string teamA;
@@ -25,6 +26,7 @@ contract IPLPredictions{
     event matchDetailsUpdated(uint _matchId, string _teamA, string _teamB, uint _timeStamp);
     event matchResultUpdated(uint _matchId, string _winningTeam);
     event finalPredictionCounts(address _predictor,uint _totalCorrectPredictions);
+    event winner(address _predictor,uint _amountWon);
     
     modifier onlyAdmin(){
         if(msg.sender != admin){
@@ -114,7 +116,7 @@ contract IPLPredictions{
         uint8 check;
         check = checkPredictor(msg.sender);
         if(check == 1){
-            for(mId=0;mId<maxMatchId;mId++){
+            for(mId=0;mId<=maxMatchId;mId++){
                 if (keccak256(prediction[msg.sender][mId]) == keccak256(matchResult[mId])){
                     correctPredict++;
                 }
@@ -128,7 +130,7 @@ contract IPLPredictions{
         for(pc=0;pc<=predictorsCount;pc++){
             uint mId1;
             uint correctPredict = 0;
-            for(mId1=0;mId1<maxMatchId;mId1++){
+            for(mId1=0;mId1<=maxMatchId;mId1++){
                 if (keccak256(prediction[msg.sender][mId1]) == keccak256(matchResult[mId1])){
                     correctPredict++;
                 }
@@ -138,12 +140,12 @@ contract IPLPredictions{
         }
     }
     
-    function topPredictor() public onlyAdmin{
+    function topPredictor() public onlyAdmin returns(uint _totalTopPredictors, uint _totalAmount){
         uint pc1;
         uint topCount;
         uint tp;
+        uint tpc1;
         uint incount;
-        uint tpc;
         for(pc1=0;pc1<=predictorsCount;pc1++){
             incount = successCount[predictor[pc1]];
             if(incount > topCount){
@@ -152,9 +154,22 @@ contract IPLPredictions{
         }
         for(tp=0;tp<=predictorsCount;tp++){
             if(topCount == successCount[predictor[tp]]){
-                toppers[tpc] = predictor[tp];
-                tpc++;
+                toppers[tpc1] = predictor[tp];
+                tpc1++;
             }
+        }
+        tpc = tpc1;
+        return(tpc,this.balance);
+    }
+    
+    function winnerPayment()public payable onlyAdmin{
+        uint tp1;
+        uint totalAmount = this.balance;
+        uint winAmount;
+        winAmount = (totalAmount/tpc);
+        for(tp1=0;tp1<=tpc;tp1++){
+            toppers[tp1].transfer(winAmount);
+            emit winner(toppers[tp1],winAmount);
         }
     }
 }
