@@ -2,6 +2,12 @@ pragma solidity ^0.4.21;
 
 contract IPLPredictions{
     
+    //Fantasy Predictions Challenge
+    
+    /*This code is for a fantasy predictions challenge. Once the contract is deployed by admin, 
+    any member can register as a predictor by paying 1 ether, and give the predictions.  
+    At end of the tournament, admin can check the final counts and pay top predictors directly from contract. */
+    
     address admin;
     //address[] predictor;
     uint predictorsCount;
@@ -29,9 +35,7 @@ contract IPLPredictions{
     event winner(address _predictor,uint _amountWon);
     
     modifier onlyAdmin(){
-        if(msg.sender != admin){
-             revert;
-        }
+        require(msg.sender == admin);
              _;
     }
     
@@ -127,16 +131,16 @@ contract IPLPredictions{
     
     function finalCounts() public onlyAdmin{
         uint pc;
-        for(pc=0;pc<=predictorsCount;pc++){
+        for(pc=0;pc<predictorsCount;pc++){
             uint mId1;
             uint correctPredict = 0;
             for(mId1=0;mId1<=maxMatchId;mId1++){
-                if (keccak256(prediction[msg.sender][mId1]) == keccak256(matchResult[mId1])){
+                if (keccak256(prediction[predictor[pc]][mId1]) == keccak256(matchResult[mId1])){
                     correctPredict++;
                 }
             }
-        successCount[predictor[pc]] = correctPredict;  
-        emit finalPredictionCounts(predictor[pc],correctPredict);
+            successCount[predictor[pc]] = correctPredict;  
+            emit finalPredictionCounts(predictor[pc],successCount[predictor[pc]]);
         }
     }
     
@@ -167,7 +171,7 @@ contract IPLPredictions{
         uint totalAmount = this.balance;
         uint winAmount;
         winAmount = (totalAmount/tpc);
-        for(tp1=0;tp1<=tpc;tp1++){
+        for(tp1=0;tp1<tpc;tp1++){
             toppers[tp1].transfer(winAmount);
             emit winner(toppers[tp1],winAmount);
         }
