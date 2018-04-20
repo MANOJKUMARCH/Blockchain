@@ -5,7 +5,6 @@ pragma solidity ^0.4.22;
    
 contract Retailers{
     
-    uint units;
     uint retailerCount;
     address samsungAdmin;
     
@@ -37,15 +36,21 @@ contract Retailers{
     samsungAdmin = msg.sender;
     }
     
-    function retailerRegister(string _name, retailerCredibility _rC) public notAdmin{
+    function checkRetailerExistance(address _rAddress) public view returns(uint _check){
         uint i=0;
         uint check;
         for(i=0;i<=retailerCount;i++){
-            if(retailers[i].retailerAddress == msg.sender){
-                check = 1;
+            if(retailers[i].retailerAddress == _rAddress){
+                check = i;
+                return(check);
             }
         }
-        if(check != 1){
+        return(check);
+    }
+    
+    function retailerRegister(string _name, retailerCredibility _rC) public notAdmin{
+        uint check1 = checkRetailerExistance(msg.sender);
+        if(check1 == 0){
             retailerDetails memory temp = retailerDetails(_name,msg.sender,_rC);
             retailerCount++;
             retailers[retailerCount] = temp;
@@ -61,13 +66,28 @@ contract Retailers{
     }
     
     function getRetailerDetails(address _rAddress) external view returns(string _name, address _rAd, retailerCredibility){
-        uint i=0;
-        for(i=0;i<=retailerCount;i++){
-            if(retailers[i].retailerAddress == _rAddress){
-                return(retailers[i].name,retailers[i].retailerAddress,retailers[i].credibility);
-            }
+        uint check2 = checkRetailerExistance(msg.sender);
+        if(check2 == 0){
+                return(retailers[check2].name,retailers[check2].retailerAddress,retailers[check2].credibility);
         }
         retailerCredibility inv;
         return("Invalid retailer Address",_rAddress,inv);
+    }
+}
+
+contract Orders{
+    
+    enum item {TV,Refregirator,HomeTheater,AirConditioner,Microwave}
+    
+    uint units;
+    uint discount;
+    
+    Retailers retailer;
+    
+    function checkValidRetailer(address _retailersContractAddress) public{
+        retailer = Retailers(_retailersContractAddress);
+        uint retailerCheck;
+        retailerCheck = retailer.checkRetailerExistance(msg.sender);
+        require(retailerCheck != 0);
     }
 }
