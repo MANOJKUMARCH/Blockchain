@@ -121,8 +121,8 @@ contract Orders is Retailers{
         uint totalUnits = orders[_orderNumber].quantity;
         uint price = pricePerUnit[uint(orders[_orderNumber].item)];
         uint amountPayable = price * totalUnits;
-        uint amountPaid = orders[orderNumber].orderAmount;
-        address orderRAdd = orders[orderNumber].rAdd;
+        uint amountPaid = orders[_orderNumber].orderAmount;
+        address orderRAdd = orders[_orderNumber].rAdd;
         uint retailerCheck;
         retailerCredibility rCred;
         retailerCheck = checkRetailerExistance(orders[_orderNumber].rAdd);
@@ -134,43 +134,44 @@ contract Orders is Retailers{
         if(uint(rCred) == 0){
             return("Retailer not yet accepted, contact admin");
         }else if(uint(rCred) == 1){
-            orderPayment(amountPaid,amountPayable,_companyAddress,orderRAdd);
+            orderPayment(amountPaid,amountPayable,_companyAddress,orderRAdd,_orderNumber);
         }else if(uint(rCred) == 2){
             if(totalUnits > 10000){
                 finalPayable = (amountPayable * 90)/100;
-                orderPayment(amountPaid,finalPayable,_companyAddress,orderRAdd);
+                orderPayment(amountPaid,finalPayable,_companyAddress,orderRAdd,_orderNumber);
             }else{
-                orderPayment(amountPaid,amountPayable,_companyAddress,orderRAdd);
+                orderPayment(amountPaid,amountPayable,_companyAddress,orderRAdd,_orderNumber);
             }
         }else if(uint(rCred) == 3){
             if(totalUnits > 10000){
                 finalPayable = (amountPayable * 80)/100;
-                orderPayment(amountPaid,finalPayable,_companyAddress,orderRAdd);
+                orderPayment(amountPaid,finalPayable,_companyAddress,orderRAdd,_orderNumber);
             }else if(totalUnits > 5000 && totalUnits <= 10000){
                 finalPayable = (amountPayable * 90)/100;
-                orderPayment(amountPaid,finalPayable,_companyAddress,orderRAdd);
+                orderPayment(amountPaid,finalPayable,_companyAddress,orderRAdd,_orderNumber);
             }else{
-                orderPayment(amountPaid,amountPayable,_companyAddress,orderRAdd);
+                orderPayment(amountPaid,amountPayable,_companyAddress,orderRAdd,_orderNumber);
             }
         }else if(uint(rCred) == 4){
             if(totalUnits > 10000){
                 finalPayable = (amountPayable * 70)/100;
-                orderPayment(amountPaid,finalPayable,_companyAddress,orderRAdd);
+                orderPayment(amountPaid,finalPayable,_companyAddress,orderRAdd,_orderNumber);
             }else if(totalUnits > 5000 && totalUnits <= 10000){
                 finalPayable = (amountPayable * 85)/100;
-                orderPayment(amountPaid,finalPayable,_companyAddress,orderRAdd);
+                orderPayment(amountPaid,finalPayable,_companyAddress,orderRAdd,_orderNumber);
             }else{
-                orderPayment(amountPaid,amountPayable,_companyAddress,orderRAdd);
+                orderPayment(amountPaid,amountPayable,_companyAddress,orderRAdd,_orderNumber);
             }
         }
     }
     
-    function orderPayment(uint _paid,uint _payable, address _comAd, address _orAd) internal onlyAdmin returns(string){
+    function orderPayment(uint _paid,uint _payable, address _comAd, address _orAd, uint _orNo) internal onlyAdmin returns(string){
         if(_paid >= _payable){
             _comAd.transfer(_payable);
             return("Order Executed");
             }else{
                 _orAd.transfer(_paid);
+                orders[_orNo].orderAmount = 0;
                 return("Insufficient ammount, hence returning amount and canceling order");
             }
     }
