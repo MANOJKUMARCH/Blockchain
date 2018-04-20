@@ -1,7 +1,8 @@
 pragma solidity ^0.4.22;
 
 /* This is the POC for the supplychain where the retailers can register and place orders for the goods.
-   Here in this example, we are taking the manufacturer as Samsung*/
+   Here in this example, we are taking the manufacturer as Samsung. Here Samsung is used as example. This can be 
+   used by any company*/
    
 contract Retailers{
     
@@ -58,11 +59,11 @@ contract Retailers{
         }
     }
     
-    function retailerAccept(uint _rCount, retailerCredibility _rCred) public onlyAdmin {
+    function retailerAccept(uint _rCount, uint _rCred) public onlyAdmin {
         address rAd = retailers[_rCount].retailerAddress;
         retailerAcceptance[rAd] = true;
-        retailers[_rCount].credibility = _rCred;
-        emit retailerAccepted("Retailer is accepted with detials",retailers[_rCount].name,retailers[_rCount].retailerAddress,_rCred);
+        retailers[_rCount].credibility = retailerCredibility(_rCred);
+        emit retailerAccepted("Retailer is accepted with detials",retailers[_rCount].name,retailers[_rCount].retailerAddress,retailerCredibility(_rCred));
     }
     
     function getRetailerDetails(address _rAddress) external view returns(string _name, address _rAd, retailerCredibility){
@@ -75,19 +76,102 @@ contract Retailers{
     }
 }
 
-contract Orders{
+contract Orders is Retailers{
     
-    enum item {TV,Refregirator,HomeTheater,AirConditioner,Microwave}
+    enum Item {TV,Refregirator,HomeTheater,AirConditioner,Microwave}
+    uint[] pricePerUnit = [2000 wei,1000 wei,1000 wei,2000 wei,1000 wei];
     
     uint units;
     uint discount;
+    uint set;
+    uint orderNumber;
     
-    Retailers retailer;
+    address admin;
     
-    function checkValidRetailer(address _retailersContractAddress) public{
-        retailer = Retailers(_retailersContractAddress);
+    struct order{
+        address rAdd;
+        Item item;
+        uint quantity;
+        uint orderAmount;
+    }
+    
+    mapping(uint => order) orders;
+    
+    event retailerOrder(address _retailersAddress,Item orderedItem, uint totalUnits,uint amountPaid);
+    
+    modifier onlyAdmin(){
+        require(admin == msg.sender);
+        _;
+    }
+    
+    function Orders() public{
+        admin = msg.sender;
+        samsungAdmin = admin;
+    }
+    
+    function placeOrder(uint _item, uint _units) public payable{
+        orderNumber++;
+        order memory temp = order(msg.sender,Item(_item),_units,msg.value);
+        orders[orderNumber] = temp;
+        //emit retailerOrder(msg.sender,orderedItem,_units,amountPayable);
+    }
+    
+    function executeOrder(uint _orderNumber,address _companyAddress) public onlyAdmin returns(string){
+        uint finalPayable;
+        uint totalUnits = orders[_orderNumber].quantity;
+        uint price = pricePerUnit[uint(orders[_orderNumber].item)];
+        uint amountPayable = price * totalUnits;
+        uint amountPaid = orders[orderNumber].orderAmount;
+        address orderRAdd = orders[orderNumber].rAdd;
         uint retailerCheck;
-        retailerCheck = retailer.checkRetailerExistance(msg.sender);
-        require(retailerCheck != 0);
+        retailerCredibility rCred;
+        retailerCheck = checkRetailerExistance(orders[_orderNumber].rAdd);
+        if(retailerCheck != 0){
+            rCred = retailers[retailerCheck].credibility;
+        }else{
+            return("Retailer is not listed");
+        }
+        if(uint(rCred) == 0){
+            return("Retailer not yet accepted, contact admin");
+        }else if(uint(rCred) == 1){
+            orderPayment(amountPaid,amountPayable,_companyAddress,orderRAdd);
+        }else if(uint(rCred) == 2){
+            if(totalUnits > 10000){
+                finalPayable = (amountPayable * 90)/100;
+                orderPayment(amountPaid,finalPayable,_companyAddress,orderRAdd);
+            }else{
+                orderPayment(amountPaid,amountPayable,_companyAddress,orderRAdd);
+            }
+        }else if(uint(rCred) == 3){
+            if(totalUnits > 10000){
+                finalPayable = (amountPayable * 80)/100;
+                orderPayment(amountPaid,finalPayable,_companyAddress,orderRAdd);
+            }else if(totalUnits > 5000 && totalUnits <= 10000){
+                finalPayable = (amountPayable * 90)/100;
+                orderPayment(amountPaid,finalPayable,_companyAddress,orderRAdd);
+            }else{
+                orderPayment(amountPaid,amountPayable,_companyAddress,orderRAdd);
+            }
+        }else if(uint(rCred) == 4){
+            if(totalUnits > 10000){
+                finalPayable = (amountPayable * 70)/100;
+                orderPayment(amountPaid,finalPayable,_companyAddress,orderRAdd);
+            }else if(totalUnits > 5000 && totalUnits <= 10000){
+                finalPayable = (amountPayable * 85)/100;
+                orderPayment(amountPaid,finalPayable,_companyAddress,orderRAdd);
+            }else{
+                orderPayment(amountPaid,amountPayable,_companyAddress,orderRAdd);
+            }
+        }
+    }
+    
+    function orderPayment(uint _paid,uint _payable, address _comAd, address _orAd) internal onlyAdmin returns(string){
+        if(_paid >= _payable){
+            _comAd.transfer(_payable);
+            return("Order Executed");
+            }else{
+                _orAd.transfer(_paid);
+                return("Insufficient ammount, hence returning amount and canceling order");
+            }
     }
 }
