@@ -37,7 +37,7 @@ contract Retailers{
     samsungAdmin = msg.sender;
     }
     
-    function checkRetailerExistance(address _rAddress) public view returns(uint _check){
+    function checkRetailerExistance(address _rAddress) public view returns(uint _retailerNo){
         uint i=0;
         uint check;
         for(i=0;i<=retailerCount;i++){
@@ -55,6 +55,10 @@ contract Retailers{
             retailerDetails memory temp = retailerDetails(_name,msg.sender,retailerCredibility(0));
             retailerCount++;
             retailers[retailerCount] = temp;
+            emit retailerRequets(_name,msg.sender,retailerCount);
+        }else{
+            retailerDetails memory temp1 = retailerDetails(_name,msg.sender,retailerCredibility(0));
+            retailers[check1] = temp1;
             emit retailerRequets(_name,msg.sender,retailerCount);
         }
     }
